@@ -1,0 +1,37 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/text_view_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_margin="5dp"
+        android:layout_alignParentTop="true"
+        android:text="Tracker"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:id="@+id/text_view_rssi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="5dp"
+        android:text="Rssi:-65"
+        android:textSize="14sp"/>
+
+
+    <TextView
+        android:id="@+id/text_view_mac_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:text="3C:01:2A:4C:6F:4B"
+        android:layout_margin="5dp"
+        android:layout_below="@+id/text_view_name"
+        android:textSize="14sp"/>
+</RelativeLayout>
