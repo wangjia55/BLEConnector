@@ -92,6 +92,9 @@ public class BleManager {
     }
 
 
+    /**
+     * 根据给出的设备信息，直接连接某个固定的ble设备
+     */
     public void connectDevice(BleConnectInfo bleConnectInfo, boolean isAuto, BleConnectCallback bleDeviceFoundCallback) {
         if (mGoogleBle.getScanState() != ScanState.Scanning) {
             mCurrentScanType = ScanType.DEVICE;
@@ -102,6 +105,17 @@ public class BleManager {
         }
     }
 
+
+    /**
+     * 扫描ble设备
+     */
+    public void scanDevice(BleScanCallback scanCallback){
+        if (mGoogleBle.getScanState() != ScanState.Scanning) {
+            mCurrentScanType = ScanType.DEVICE;
+            mIsAuto = false;
+            mGoogleBle.startScan(scanCallback);
+        }
+    }
 
     public void writeToDevice(byte[] bytes) {
         mGoogleBle.write(bytes, mBleDataReceiveCallback);

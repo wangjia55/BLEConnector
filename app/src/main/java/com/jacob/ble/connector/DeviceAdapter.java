@@ -13,15 +13,17 @@ import java.util.List;
 public class DeviceAdapter extends BaseAdapter {
 
 
-    private List<BLEBean> deviceList = new ArrayList<BLEBean>();
+    private List<BLEBean> deviceList = new ArrayList<>();
 
     private Context mContext;
     private LayoutInflater mLayoutInflater;
 
-    public DeviceAdapter(Context context) {
+    public DeviceAdapter(Context context, List<BLEBean> deviceList) {
         this.mContext = context;
         this.mLayoutInflater = LayoutInflater.from(context);
+        this.deviceList = deviceList;
     }
+
 
     @Override
     public int getCount() {
@@ -54,7 +56,9 @@ public class DeviceAdapter extends BaseAdapter {
     }
 
     private void initializeViews(BLEBean device, ViewHolder holder) {
-        holder.textViewName.setText(device.getBluetoothDevice().getName());
+        String name = device.getBluetoothDevice().getName();
+        name = (name == null) ? "Unkown" : name;
+        holder.textViewName.setText(name);
         holder.textViewMacAddress.setText(device.getBluetoothDevice().getAddress());
         holder.textViewRssi.setText("RSSI:" + device.getRssi());
     }
