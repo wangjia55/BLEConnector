@@ -13,30 +13,11 @@
             android:id="@+id/text_view_state"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:background="#a8a4bcff"
+            android:background="#a8c1abff"
             android:gravity="center"
             android:text="Ble is Connecting"
             android:textSize="17sp"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#a8c7aeff"
-            android:orientation="horizontal">
-
-            <Spinner
-                android:id="@+id/spinner_ble_command"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"/>
-
-            <Button
-                android:id="@+id/button_send_command"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Send"/>
-
-        </LinearLayout>
     </LinearLayout>
 
 
