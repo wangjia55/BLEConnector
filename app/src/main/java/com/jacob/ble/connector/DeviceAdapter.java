@@ -63,6 +63,10 @@ public class DeviceAdapter extends BaseAdapter {
         holder.textViewRssi.setText("RSSI:" + device.getRssi());
     }
 
+    public BLEBean getDevice(int position) {
+        return deviceList.get(position);
+    }
+
     protected class ViewHolder {
         private TextView textViewName;
         private TextView textViewRssi;

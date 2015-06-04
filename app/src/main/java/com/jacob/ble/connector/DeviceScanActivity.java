@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -33,14 +34,15 @@ public class DeviceScanActivity extends FragmentActivity implements View.OnClick
     private ListView mListView;
     private Button mButtonScanDevice;
     private DeviceAdapter mDeviceAdapter;
+
     private DeviceInfo mDeivceInfo;
     private BluetoothAdapter mBluetoothAdapter;
     private List<BLEBean> mListBle = new ArrayList<>();
-    private Handler mHandler = new Handler(){
+    private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case MSG_STOP_SCAN:
                     BleManager.getInstance().stopScan();
                     mButtonScanDevice.setEnabled(true);
@@ -82,12 +84,23 @@ public class DeviceScanActivity extends FragmentActivity implements View.OnClick
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan_device);
-        mButtonScanDevice = (Button) findViewById(R.id.button_scan_device);
+        mButtonScanDevice = (Button) findViewById(R.id.button_send_command);
         mButtonScanDevice.setOnClickListener(this);
 
         mListView = (ListView) findViewById(R.id.list_view_device);
         mDeviceAdapter = new DeviceAdapter(getApplicationContext(), mListBle);
         mListView.setAdapter(mDeviceAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(DeviceScanActivity.this, DeviceCommandActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("BleDevice", mDeviceAdapter.getDevice(position).getBluetoothDevice());
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+        });
+
 
         // 优先判断设备是否支持ble， 再次判断ble是否开关， 如果没有打开就请求开启
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
@@ -101,8 +114,6 @@ public class DeviceScanActivity extends FragmentActivity implements View.OnClick
                 startActivityForResult(intent, REQUEST_START_BLE);
             }
         }
-
-
     }
 
     @Override
@@ -123,15 +134,16 @@ public class DeviceScanActivity extends FragmentActivity implements View.OnClick
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.button_scan_device:
+            case R.id.button_send_command:
                 mListBle.clear();
                 mDeviceAdapter.notifyDataSetChanged();
-
                 mDeivceInfo = new DeviceInfo("900000000000001");
-                BleManager.getInstance().scanDevice(this);
-                mButtonScanDevice.setEnabled(false);
 
-                mHandler.sendEmptyMessageDelayed(MSG_STOP_SCAN,10000);
+                //这里扫描10s钟， 10s后停止扫描
+                BleManager.getInstance().scanDevice(this);
+                mHandler.sendEmptyMessageDelayed(MSG_STOP_SCAN, 10000);
+
+                mButtonScanDevice.setEnabled(false);
                 break;
         }
     }

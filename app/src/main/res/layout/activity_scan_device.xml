@@ -8,11 +8,11 @@
         android:id="@+id/list_view_device"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/button_scan_device"
+        android:layout_above="@+id/button_send_command"
         android:dividerHeight="0.5dp"/>
 
     <Button
-        android:id="@+id/button_scan_device"
+        android:id="@+id/button_send_command"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_alignParentBottom="true"
