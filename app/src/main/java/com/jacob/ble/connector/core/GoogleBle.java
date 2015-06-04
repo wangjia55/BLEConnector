@@ -36,6 +36,7 @@ public class GoogleBle implements BluetoothAdapter.LeScanCallback {
     private static final int MSG_CONNECT_SUCCESS = 0x11227;
     private static final int MSG_RSSI_READ_SUCCESS = 0x11228;
     private static final int MSG_RSSI_READ_ERROR = 0x11229;
+    private static final int MSG_READ_DATA = 0x11230;
     private static final int CONNECTION_CHECK_TIME = 30 * 1000;
     private static final String PARAM_DEVICE = "device";
     private static final String PARAM_RSSI = "rssi";
@@ -52,6 +53,7 @@ public class GoogleBle implements BluetoothAdapter.LeScanCallback {
     private BleConnectCallback mBleConnectCallback;
     private BleRssiCallback mBleRssiCallback;
     private BleWriteCallback mBleWriteCallback;
+    private BleReadCallback mBleReadCallback;
     private BleConnectInfo mBleConnectInfo;
     private BluetoothGattCharacteristic mReadCharacteristic;
     private BluetoothGattCharacteristic mWriteCharacteristic;
@@ -120,12 +122,23 @@ public class GoogleBle implements BluetoothAdapter.LeScanCallback {
                     break;
                 case MSG_RSSI_READ_ERROR:
                     callOnRssiReadError(msg);
+                    break;
+                case MSG_READ_DATA:
+                    callOnDataRead(msg);
+                    break;
                 default:
                     break;
             }
 
         }
     };
+
+    private void callOnDataRead(Message msg) {
+        if (mBleReadCallback != null){
+            byte[] value = msg.getData().getByteArray(PARAM_BYTE);
+            mBleReadCallback.readDataSuccess(value);
+        }
+    }
 
     private void callOnRssiReadError(Message msg) {
         if (mBleRssiCallback != null) {
@@ -238,6 +251,13 @@ public class GoogleBle implements BluetoothAdapter.LeScanCallback {
         }
 
         @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicRead(gatt, characteristic, status);
+            LogUtils.LOGD(TAG, "onCharacteristicRead: " + status);
+            sendCharacteristicRead(characteristic.getValue());
+        }
+
+        @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
             LogUtils.LOGD(TAG, "----------onCharacteristicChanged------------");
@@ -254,6 +274,15 @@ public class GoogleBle implements BluetoothAdapter.LeScanCallback {
             }
         }
     };
+
+    private void sendCharacteristicRead(byte[] value) {
+        Message message = Message.obtain();
+        message.what = MSG_READ_DATA;
+        Bundle bundle = new Bundle();
+        bundle.putByteArray(PARAM_BYTE, value);
+        message.setData(bundle);
+        mHandler.sendMessage(message);
+    }
 
     private void sendRssiReadErrorMessage(int status) {
         Message message = Message.obtain();
@@ -341,7 +370,16 @@ public class GoogleBle implements BluetoothAdapter.LeScanCallback {
         mBluetoothAdapter.stopLeScan(this);
     }
 
-    public void connect(BluetoothDevice device, BleConnectInfo bleConnectInfo, boolean isAuto, BleConnectCallback bleConnectCallback) {
+    public void disconnect() {
+        if (mBluetoothGatt != null) {
+            mBluetoothGatt.close();
+            mBluetoothGatt = null;
+        }
+        mConnectState = ConnectState.Disconnect;
+    }
+
+    public void connect(BluetoothDevice device, BleConnectInfo bleConnectInfo, boolean isAuto,
+                        BleConnectCallback bleConnectCallback) {
         mBluetoothDevice = device;
         mBleConnectInfo = bleConnectInfo;
         mBleConnectCallback = bleConnectCallback;
@@ -369,14 +407,6 @@ public class GoogleBle implements BluetoothAdapter.LeScanCallback {
         mBluetoothGatt = mBluetoothDevice.connectGatt(mContext, isAuto, mGattCallback);
         mConnectState = ConnectState.Connecting;
         mHandler.sendEmptyMessageDelayed(MSG_CONNECTION_CHECK, CONNECTION_CHECK_TIME);
-    }
-
-    public void disconnect() {
-        if (mBluetoothGatt != null) {
-            mBluetoothGatt.close();
-            mBluetoothGatt = null;
-        }
-        mConnectState = ConnectState.Disconnect;
     }
 
     protected void sendRawData(byte[] value) {
@@ -499,5 +529,36 @@ public class GoogleBle implements BluetoothAdapter.LeScanCallback {
 
     public void setBleRssiCallback(BleRssiCallback bleRssiCallback) {
         this.mBleRssiCallback = bleRssiCallback;
+    }
+
+    /**
+     * 从设备读取数据
+     */
+    public void readData(BleReadCallback bleReadCallback) {
+        mBleReadCallback = bleReadCallback;
+        if (mBluetoothState == BluetoothState.Bluetooth_Off) {
+            if (mBleReadCallback != null) {
+                mBleReadCallback.readDataFail(ErrorStatus.BLUETOOTH_NO_OPEN, "bluetooth is no open");
+            }
+            return;
+        }
+
+        if (mConnectState != ConnectState.Connected) {
+            if (mBleReadCallback != null) {
+                mBleReadCallback.readDataFail(ErrorStatus.STATE_DISCONNECT, "current state is not connected");
+            }
+            return;
+        }
+
+
+        if (mBluetoothGatt != null && mReadCharacteristic != null) {
+            boolean success = mBluetoothGatt.readCharacteristic(mReadCharacteristic);
+            LogUtils.LOGD(TAG, "success write:" + success);
+        } else {
+            if (mBleReadCallback != null) {
+                mBleReadCallback.readDataFail(ErrorStatus.GATT_NULL, "bluetooth gatt is null or write characteristic is null");
+            }
+            LogUtils.LOGD(TAG, "write date error. connected state: ");
+        }
     }
 }

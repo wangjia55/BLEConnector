@@ -11,13 +11,17 @@ import java.util.UUID;
  * Package : com.jacob.ble.connector
  * Author : jacob
  * Date : 15-6-3
- * Description : 这个类是用来xxx
+ * Description : 这个类是用来封装你需要链接的蓝牙设备的信息， （gatt是用过service的uuid连接到指定的设备）
  */
-public class DeviceInfo  implements BleConnectInfo{
+public class DeviceInfo implements BleConnectInfo {
     private String imei;
 
     public DeviceInfo(String imbt) {
         this.imei = imbt;
+    }
+
+    public String getImei() {
+        return imei;
     }
 
     @Override

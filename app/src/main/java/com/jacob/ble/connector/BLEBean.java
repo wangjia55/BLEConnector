@@ -14,6 +14,8 @@ public class BLEBean {
 
     private int rssi;
 
+    private byte[] broadcast;
+
     public BluetoothDevice getBluetoothDevice() {
         return bluetoothDevice;
     }
@@ -28,5 +30,13 @@ public class BLEBean {
 
     public void setRssi(int rssi) {
         this.rssi = rssi;
+    }
+
+    public byte[] getBroadcast() {
+        return broadcast;
+    }
+
+    public void setBroadcast(byte[] broadcast) {
+        this.broadcast = broadcast;
     }
 }

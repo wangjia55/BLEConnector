@@ -3,12 +3,19 @@ package com.jacob.ble.connector;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.jacob.ble.connector.core.BleConnectCallback;
+import com.jacob.ble.connector.core.BleReadCallback;
+import com.jacob.ble.connector.core.ConnectState;
+import com.jacob.ble.connector.logic.BleCommand;
+import com.jacob.ble.connector.logic.BleManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +26,10 @@ public class DeviceCommandActivity extends Activity implements View.OnClickListe
     private Spinner mSpinnerCommand;
     private ListView mListViewDetails;
 
+    // ble state
+    private static final String STATE_CONNECTING = "Ble is connecting";
+    private static final String STATE_DISCONNECTED = "Ble is disconnected";
+    private static final String STATE_CONNECTED = "Ble is connected";
 
     //COMMAND {
     private static final String COMMAND_GET_IMEI = "Get IMEI";
@@ -47,6 +58,7 @@ public class DeviceCommandActivity extends Activity implements View.OnClickListe
     private static final String COMMAND_FILE_WRITE_DATA = "fw:";
 
     private List<String> mResultString = new ArrayList<>();
+    private DeviceInfo mDeviceInfo;
 
     private static final String[] mCommandString = {
             COMMAND_GET_IMEI,
@@ -63,7 +75,13 @@ public class DeviceCommandActivity extends Activity implements View.OnClickListe
 
 
     private BluetoothDevice mBluetoothDevice;
+    private ConnectState mBleConnectState;
+    private BleManager mBleManager;
+
     private ArrayAdapter<String> mBleCommandAdapter;
+
+    private Handler mHandler = new Handler();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +113,49 @@ public class DeviceCommandActivity extends Activity implements View.OnClickListe
         mBleCommandAdapter = new ArrayAdapter<>(this, R.layout.layout_command_item, mResultString);
         mListViewDetails.setAdapter(mBleCommandAdapter);
 
+        mBleManager = BleManager.getInstance();
+        mBleConnectState = mBleManager.getConnectState();
         addResultString("Device Name: " + mBluetoothDevice.getName() + " - " + mBluetoothDevice.getAddress());
+        showBleState(STATE_CONNECTING);
+
+        mDeviceInfo = new DeviceInfo("900000000000001");
+
+        mBleManager.connectDevice(mBluetoothDevice, mDeviceInfo, false, new BleConnectCallback() {
+            @Override
+            public void onConnectSuccess(BluetoothDevice bluetoothDevice) {
+                showBleState(STATE_CONNECTED);
+                //注意： 这里是向设备写一条命令，这里根据实际的情况操作
+                mBleManager.writeToDevice(BleCommand.getVerifyCommand(mDeviceInfo.getImei()));
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mBleManager.readData(new BleReadCallback() {
+
+                            @Override
+                            public void readDataSuccess(byte[] bytes) {
+                                String msg = new String(bytes);
+                                addResultString("Data: " + msg);
+                            }
+
+                            @Override
+                            public void readDataFail(int errorCode, String reason) {
+
+                            }
+                        });
+                    }
+                }, 1000);
+            }
+
+            @Override
+            public void onDeviceFound(BluetoothDevice bluetoothDevice) {
+                showBleState(STATE_CONNECTING);
+            }
+
+            @Override
+            public void onError(int errorCode, String reason) {
+                showBleState(STATE_DISCONNECTED);
+            }
+        });
     }
 
     /**
@@ -106,11 +166,21 @@ public class DeviceCommandActivity extends Activity implements View.OnClickListe
         mBleCommandAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * 显示当前蓝牙的连接状态
+     */
+    private void showBleState(String state) {
+        mTextViewState.setText(state);
+    }
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.button_send_command:
-
+                //只有当蓝牙链接成功的时候才能发送命令
+                if (mBleConnectState == ConnectState.Connected) {
+                    //TODO:
+                }
                 break;
         }
     }

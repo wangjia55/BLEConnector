@@ -35,7 +35,7 @@ public class DeviceScanActivity extends FragmentActivity implements View.OnClick
     private Button mButtonScanDevice;
     private DeviceAdapter mDeviceAdapter;
 
-    private DeviceInfo mDeivceInfo;
+
     private BluetoothAdapter mBluetoothAdapter;
     private List<BLEBean> mListBle = new ArrayList<>();
     private Handler mHandler = new Handler() {
@@ -137,7 +137,6 @@ public class DeviceScanActivity extends FragmentActivity implements View.OnClick
             case R.id.button_send_command:
                 mListBle.clear();
                 mDeviceAdapter.notifyDataSetChanged();
-                mDeivceInfo = new DeviceInfo("900000000000001");
 
                 //这里扫描10s钟， 10s后停止扫描
                 BleManager.getInstance().scanDevice(this);
@@ -153,6 +152,7 @@ public class DeviceScanActivity extends FragmentActivity implements View.OnClick
         BLEBean bleBean = new BLEBean();
         bleBean.setBluetoothDevice(device);
         bleBean.setRssi(rssi);
+        bleBean.setBroadcast(scanRecord);
         mListBle.add(bleBean);
         mDeviceAdapter.notifyDataSetChanged();
     }
