@@ -51,7 +51,7 @@ public class DeviceCommandActivity extends Activity {
         addResultString("Device Name: " + mBluetoothDevice.getName() + " - " + mBluetoothDevice.getAddress());
         showBleState(STATE_CONNECTING);
 
-        mDeviceInfo = new DeviceInfo("900000000000001");
+        mDeviceInfo = new DeviceInfo("90000000000000102");
         mBleManager.connectDevice(mBluetoothDevice, mDeviceInfo, false, new BleConnectCallback() {
             @Override
             public void onConnectSuccess(BluetoothDevice bluetoothDevice) {
@@ -106,4 +106,12 @@ public class DeviceCommandActivity extends Activity {
         mTextViewState.setText(state);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mBleManager != null) {
+            mBleManager.disconnect();
+            mBleManager.dispose();
+        }
+    }
 }
