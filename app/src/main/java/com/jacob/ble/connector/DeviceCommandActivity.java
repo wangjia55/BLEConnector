@@ -111,7 +111,6 @@ public class DeviceCommandActivity extends Activity {
         super.onDestroy();
         if (mBleManager != null) {
             mBleManager.disconnect();
-            mBleManager.dispose();
         }
     }
 }

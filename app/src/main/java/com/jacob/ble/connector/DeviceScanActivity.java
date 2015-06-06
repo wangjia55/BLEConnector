@@ -93,6 +93,7 @@ public class DeviceScanActivity extends FragmentActivity implements View.OnClick
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                BleManager.getInstance().stopScan();
                 Intent intent = new Intent(DeviceScanActivity.this, DeviceCommandActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("BleDevice", mDeviceAdapter.getDevice(position).getBluetoothDevice());
